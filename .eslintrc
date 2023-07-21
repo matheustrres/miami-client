@@ -41,6 +41,8 @@
           "/^node/",
           "module",
           "/^(.|..)\//",
+          "/^@structs/",
+          "/^@typings/",
           [
             "sibling"
           ]
@@ -51,6 +53,14 @@
         }
       }
     ],
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/consistent-type-imports": [
+      "warn",
+      {
+        "disallowTypeAnnotations": true,
+        "fixStyle": "inline-type-imports",
+        "prefer": "type-imports"
+      }
+    ]
   }
 }
