@@ -3,9 +3,12 @@ import nodePath from 'node:path';
 
 import { Client } from 'discord.js';
 
+import type ClientCommand from './command';
 import type ClientEvent from './event';
 
 export default class MiamiClient extends Client {
+	public commands: ClientCommand[];
+
 	constructor() {
 		super({
 			allowedMentions: {
@@ -14,6 +17,8 @@ export default class MiamiClient extends Client {
 			},
 			intents: 38671,
 		});
+
+		this.commands = [];
 
 		this.loadEvents();
 	}
