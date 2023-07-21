@@ -18,6 +18,9 @@
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
     "start": "node --expose-gc ."
   },
+  "dependencies": {
+    "discord.js": "^14.11.0"
+  },
   "devDependencies": {
     "@types/node": "^20.4.2",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
