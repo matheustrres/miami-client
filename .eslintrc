@@ -41,6 +41,9 @@
           "/^node/",
           "module",
           "/^(.|..)\//",
+          "/^@config/",
+          "/^@commands/",
+          "/^@events/",
           "/^@structs/",
           "/^@typings/",
           [

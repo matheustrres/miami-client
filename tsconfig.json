@@ -13,6 +13,15 @@
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "paths": {
+      "@config": [
+        "./src/config"
+      ],
+      "@commands/*": [
+        "./src/commands/*"
+      ],
+      "@events/*": [
+        "./src/events/*"
+      ],
       "@structs/*": [
         "./src/structs/*"
       ],
