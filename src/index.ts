@@ -1,5 +1,10 @@
+import { envConfig } from './config';
 import MiamiClient from './structs/client';
 
 const client = new MiamiClient();
 
-client.login(process.env.DISCORD_TOKEN).then(() => console.log('Client successfully logged in.'));
+client.login(envConfig.discordToken);
+
+client.on('ready', (): void => {
+	console.log('Client successfully connected to Discord.js Api');
+});
