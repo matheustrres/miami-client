@@ -6,6 +6,8 @@ import { Client } from 'discord.js';
 import type ClientCommand from './command';
 import type ClientEvent from './event';
 
+import { envConfig } from '@config';
+
 export default class MiamiClient extends Client {
 	public commands: ClientCommand[];
 	public events: ClientEvent[];
@@ -28,6 +30,16 @@ export default class MiamiClient extends Client {
 
 	public login(token: string): Promise<string> {
 		return super.login(token);
+	}
+
+	public async loadSlashCommands(): Promise<void> {
+		if (!this.commands.length) {
+			throw new Error('No commands have been loaded yet.');
+		}
+
+		await this.guilds.cache
+			.get(envConfig.mainGuildId)
+			?.commands.set(this.commands);
 	}
 
 	private loadCommands(path = 'src/commands'): void {
