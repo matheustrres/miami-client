@@ -8,6 +8,7 @@ import type ClientEvent from './event';
 
 export default class MiamiClient extends Client {
 	public commands: ClientCommand[];
+	public events: ClientEvent[];
 
 	constructor() {
 		super({
@@ -19,12 +20,37 @@ export default class MiamiClient extends Client {
 		});
 
 		this.commands = [];
+		this.events = [];
 
+		this.loadCommands();
 		this.loadEvents();
 	}
 
 	public login(token: string): Promise<string> {
 		return super.login(token);
+	}
+
+	private loadCommands(path = 'src/commands'): void {
+		const categories: string[] = nodeFs.readdirSync(path);
+
+		for (const category of categories) {
+			const commands: string[] = nodeFs.readdirSync(`${path}/${category}`);
+
+			for (const command of commands) {
+				const normalizedPath: string = nodePath.join(
+					process.cwd(),
+					`${path}/${category}/${command}`,
+				);
+
+				// eslint-disable-next-line @typescript-eslint/no-var-requires
+				const Command = require(normalizedPath).default;
+				const cmd = new Command(this) as ClientCommand;
+
+				this.commands.push(cmd);
+			}
+		}
+
+		console.log(`Total commands loaded: ${this.commands.length}`);
 	}
 
 	private loadEvents(path = 'src/events'): void {
@@ -43,6 +69,8 @@ export default class MiamiClient extends Client {
 				const Event = require(normalizedPath).default;
 				const evt = new Event(this) as ClientEvent;
 
+				this.events.push(evt);
+
 				if (evt.name === 'ready') {
 					super.once('ready', (...args) => evt.run(...args));
 				} else {
@@ -50,5 +78,7 @@ export default class MiamiClient extends Client {
 				}
 			}
 		}
+
+		console.log(`Total events loaded: ${this.events.length}`);
 	}
 }
