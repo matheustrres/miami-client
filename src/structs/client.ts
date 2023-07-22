@@ -84,9 +84,9 @@ export default class MiamiClient extends Client {
 				this.events.push(evt);
 
 				if (evt.name === 'ready') {
-					super.once('ready', (...args) => evt.run(...args));
+					super.once('ready', (...args) => evt.handle(...args));
 				} else {
-					super.on(evt.name, (...args) => evt.run(...args));
+					super.on(evt.name, (...args) => evt.handle(...args));
 				}
 			}
 		}

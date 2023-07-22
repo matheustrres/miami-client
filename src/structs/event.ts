@@ -11,5 +11,5 @@ export default abstract class Event {
 		this.name = props.name;
 	}
 
-	public abstract run: (...args: any[]) => Promise<any> | any;
+	public abstract handle: (...args: any[]) => Promise<any> | any;
 }

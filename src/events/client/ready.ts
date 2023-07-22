@@ -9,7 +9,7 @@ export default class ReadyEvent extends Event {
 		});
 	}
 
-	public run = async (): Promise<void> => {
+	public handle = async (): Promise<void> => {
 		await this.client.loadSlashCommands();
 
 		console.info('Client successfully connected to Discord.js Api');
