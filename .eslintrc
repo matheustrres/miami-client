@@ -46,6 +46,7 @@
           "/^@events/",
           "/^@structs/",
           "/^@typings/",
+          "/^@utils/",
           [
             "sibling"
           ]
