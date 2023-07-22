@@ -1,8 +1,8 @@
 import type MiamiClient from './client';
 
-import { EventProps, type IEvent } from '@typings/index';
+import { EventProps } from '@typings/index';
 
-export default class Event implements IEvent {
+export default abstract class Event {
 	client: MiamiClient;
 	name: string;
 
@@ -11,5 +11,5 @@ export default class Event implements IEvent {
 		this.name = props.name;
 	}
 
-	run: (...args: any[]) => Promise<any> | any;
+	public abstract run: (...args: any[]) => Promise<any> | any;
 }

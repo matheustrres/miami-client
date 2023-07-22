@@ -1,10 +1,19 @@
-import { type ApplicationCommandOptionData } from 'discord.js';
+import {
+	type InteractionResponse,
+	type Message,
+	type ApplicationCommandOptionData,
+} from 'discord.js';
 
 import MiamiClient from './client';
+import type Context from './context';
 
-import { type CommmandPermissions, type CommandProps } from '@typings/index';
+import {
+	type CommmandPermissions,
+	type CommandProps,
+	type CommandCategory,
+} from '@typings/index';
 
-export default class Command {
+export default abstract class Command {
 	protected client: MiamiClient;
 	private props: CommandProps;
 
@@ -27,7 +36,7 @@ export default class Command {
 		return this.props.description;
 	}
 
-	get category(): string {
+	get category(): CommandCategory {
 		return this.props.category;
 	}
 
@@ -38,4 +47,8 @@ export default class Command {
 	get permissions(): CommmandPermissions | undefined {
 		return this.props.permissions;
 	}
+
+	public abstract run: (
+		ctx: Context,
+	) => Promise<Message<boolean> | InteractionResponse<boolean>>;
 }
