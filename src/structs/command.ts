@@ -1,8 +1,4 @@
-import {
-	type InteractionResponse,
-	type Message,
-	type ApplicationCommandOptionData,
-} from 'discord.js';
+import { type ApplicationCommandOptionData } from 'discord.js';
 
 import MiamiClient from './client';
 import type Context from './context';
@@ -48,5 +44,5 @@ export default abstract class Command {
 		return this.props.permissions;
 	}
 
-	public abstract run: (ctx: Context) => Promise<Message | InteractionResponse>;
+	public abstract run: (ctx: Context) => Promise<any>;
 }
