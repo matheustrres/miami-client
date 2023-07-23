@@ -15,7 +15,7 @@ import MiamiClient from './client';
 export default class Context {
 	constructor(
 		private readonly client: MiamiClient,
-		private readonly interaction: ChatInputCommandInteraction,
+		private readonly _interaction: ChatInputCommandInteraction,
 	) {}
 
 	get channel(): TextBasedChannel | null {
@@ -32,6 +32,10 @@ export default class Context {
 
 	get user(): User {
 		return this.interaction.user;
+	}
+
+	get interaction(): ChatInputCommandInteraction {
+		return this._interaction;
 	}
 
 	public async reply(
