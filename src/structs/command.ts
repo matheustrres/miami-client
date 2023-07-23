@@ -48,7 +48,5 @@ export default abstract class Command {
 		return this.props.permissions;
 	}
 
-	public abstract run: (
-		ctx: Context,
-	) => Promise<Message<boolean> | InteractionResponse<boolean>>;
+	public abstract run: (ctx: Context) => Promise<Message | InteractionResponse>;
 }
