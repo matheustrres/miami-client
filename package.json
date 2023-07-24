@@ -6,25 +6,17 @@
   },
   "description": "A discord client built with typescript to ease everyday activities and make them more enjoyable",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "./dist/index.js",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=18.16.1",
     "npm": "9.5.1"
   },
-  "_moduleAliases": {
-    "@config": "./dist/config",
-    "@commands": "./dist/commands",
-    "@events": "./dist/events",
-    "@structs": "./dist/structs",
-    "@typings": "./dist/typings",
-    "@utils": "./dist/utils"
-  },
   "scripts": {
-    "build": "tsc --build ./tsconfig.build.json",
+    "build": "rm -rf ./dist && tsc --build ./tsconfig.build.json",
     "format": "prettier --write \"{src,tests}/**/*.ts\"",
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
-    "start": "node --expose-gc ./dist/index.js",
+    "start": "NODE_ENV=production node --expose-gc .",
     "start:dev": "dotenv -e .env -- tsx watch ./src/index.ts --tsconfig ./tsconfig.json --ignore node_modules",
     "prepare": "husky install"
   },
