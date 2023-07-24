@@ -1,6 +1,6 @@
 import {
 	type APIInteractionGuildMember,
-	ChatInputCommandInteraction,
+	type ChatInputCommandInteraction,
 	type Guild,
 	type GuildMember,
 	type InteractionReplyOptions,
@@ -10,7 +10,7 @@ import {
 	type User,
 } from 'discord.js';
 
-import MiamiClient from './client';
+import type MiamiClient from './client';
 
 export default class Context {
 	constructor(

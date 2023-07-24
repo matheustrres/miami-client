@@ -1,16 +1,15 @@
-import nodeFs from 'node:fs';
-import nodePath from 'node:path';
-
 import { Client } from 'discord.js';
 
-import type ClientCommand from './command';
-import type ClientEvent from './event';
+import type Command from './command';
+import type Event from './event';
 
 import { envConfig } from '@config';
 
+import { loadResources } from '@utils/helpers/load-resources';
+
 export default class MiamiClient extends Client {
-	public commands: ClientCommand[];
-	public events: ClientEvent[];
+	public commands: Command[] = [];
+	public events: Event[] = [];
 
 	constructor() {
 		super({
@@ -21,11 +20,8 @@ export default class MiamiClient extends Client {
 			intents: 38671,
 		});
 
-		this.commands = [];
-		this.events = [];
-
-		this.loadCommands();
 		this.loadEvents();
+		this.loadCommands();
 	}
 
 	public login(token: string): Promise<string> {
@@ -42,55 +38,31 @@ export default class MiamiClient extends Client {
 			?.commands.set(this.commands);
 	}
 
-	private loadCommands(path = 'src/commands'): void {
-		const categories: string[] = nodeFs.readdirSync(path);
+	private loadCommands(): void {
+		const commands = loadResources<Command>({
+			client: this,
+			resourceArray: this.commands,
+			resourcePath: 'commands',
+		});
 
-		for (const category of categories) {
-			const commands: string[] = nodeFs.readdirSync(`${path}/${category}`);
-
-			for (const command of commands) {
-				const normalizedPath: string = nodePath.join(
-					process.cwd(),
-					`${path}/${category}/${command}`,
-				);
-
-				// eslint-disable-next-line @typescript-eslint/no-var-requires
-				const Command = require(normalizedPath).default;
-				const cmd = new Command(this) as ClientCommand;
-
-				this.commands.push(cmd);
-			}
-		}
-
-		console.log(`Total commands loaded: ${this.commands.length}`);
+		console.log(`Total commands loaded: ${commands.length}`);
 	}
 
-	private loadEvents(path = 'src/events'): void {
-		const categories: string[] = nodeFs.readdirSync(path);
+	private loadEvents(): void {
+		const events = loadResources<Event>({
+			client: this,
+			resourceArray: this.events,
+			resourcePath: 'events',
+		});
 
-		for (const category of categories) {
-			const events: string[] = nodeFs.readdirSync(`${path}/${category}`);
-
-			for (const event of events) {
-				const normalizedPath: string = nodePath.join(
-					process.cwd(),
-					`${path}/${category}/${event}`,
-				);
-
-				// eslint-disable-next-line @typescript-eslint/no-var-requires
-				const Event = require(normalizedPath).default;
-				const evt = new Event(this) as ClientEvent;
-
-				this.events.push(evt);
-
-				if (evt.name === 'ready') {
-					super.once('ready', (...args) => evt.handle(...args));
-				} else {
-					super.on(evt.name, (...args) => evt.handle(...args));
-				}
+		for (const event of events) {
+			if (event.name === 'ready') {
+				super.once('ready', (...args: any[]): any => event.handle(...args));
+			} else {
+				super.on(event.name, (...args: any[]): any => event.handle(...args));
 			}
 		}
 
-		console.log(`Total events loaded: ${this.events.length}`);
+		console.log(`Total events loaded: ${events.length}`);
 	}
 }

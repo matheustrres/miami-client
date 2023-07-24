@@ -1,6 +1,6 @@
 import { type InteractionResponse, type Message } from 'discord.js';
 
-import MiamiClient from '@structs/client';
+import type MiamiClient from '@structs/client';
 import Command from '@structs/command';
 import type Context from '@structs/context';
 

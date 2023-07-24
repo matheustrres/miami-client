@@ -1,4 +1,4 @@
-import MiamiClient from '@structs/client';
+import type MiamiClient from '@structs/client';
 import Event from '@structs/event';
 
 export default class ReadyEvent extends Event {

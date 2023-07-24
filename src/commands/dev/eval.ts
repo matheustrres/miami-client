@@ -12,7 +12,7 @@ import {
 
 import { envConfig } from '@config';
 
-import MiamiClient from '@structs/client';
+import type MiamiClient from '@structs/client';
 import Command from '@structs/command';
 import type Context from '@structs/context';
 

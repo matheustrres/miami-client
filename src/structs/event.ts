@@ -1,6 +1,6 @@
 import type MiamiClient from './client';
 
-import { EventProps } from '@typings/index';
+import { type EventProps } from '@typings/index';
 
 export default abstract class Event {
 	client: MiamiClient;
