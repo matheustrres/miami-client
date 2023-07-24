@@ -10,8 +10,6 @@ if (process.env.NODE_ENV === 'production') {
 	root = nodePath.resolve(__dirname, '../../src');
 }
 
-console.log({ path: nodePath.join(root, 'config') });
-
 moduleAlias.addAliases({
 	'@config': nodePath.join(root, 'config'),
 	'@commands': nodePath.join(root, 'commands'),
