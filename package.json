@@ -16,8 +16,8 @@
     "build": "rm -rf ./dist && tsc --build ./tsconfig.build.json",
     "format": "prettier --write \"{src,tests}/**/*.ts\"",
     "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
-    "start": "NODE_ENV=production node --expose-gc .",
-    "start:dev": "dotenv -e .env -- tsx watch ./src/index.ts --tsconfig ./tsconfig.json --ignore node_modules",
+    "start": "dotenv -e .env -- node --expose-gc .",
+    "start:dev": "dotenv -e .env.local -- tsx watch ./src/index.ts --tsconfig ./tsconfig.json --ignore node_modules",
     "prepare": "husky install"
   },
   "dependencies": {
