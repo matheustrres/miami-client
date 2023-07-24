@@ -1,6 +1,6 @@
 import { type ApplicationCommandOptionData } from 'discord.js';
 
-import MiamiClient from './client';
+import type MiamiClient from './client';
 import type Context from './context';
 
 import {
