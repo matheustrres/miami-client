@@ -1,3 +1,5 @@
+import 'module-alias/register';
+
 import { envConfig } from './config';
 import MiamiClient from './structs/client';
 
