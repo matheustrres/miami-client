@@ -21,18 +21,20 @@ export const loadResources = <T>(props: LoadResourcesProps<T>): T[] => {
 		);
 
 		for (const resource of resources) {
-			const joinedPath: string = nodePath.resolve(
-				root,
-				props.resourcePath,
-				directory,
-				resource,
-			);
+			if (resource.endsWith('.js') || resource.endsWith('.ts')) {
+				const joinedPath: string = nodePath.resolve(
+					root,
+					props.resourcePath,
+					directory,
+					resource,
+				);
 
-			// eslint-disable-next-line @typescript-eslint/no-var-requires
-			const Resource = require(joinedPath).default;
-			const res = new Resource(props.client) as T;
+				// eslint-disable-next-line @typescript-eslint/no-var-requires
+				const Resource = require(joinedPath).default;
+				const res = new Resource(props.client) as T;
 
-			props.resourceArray.push(res);
+				props.resourceArray.push(res);
+			}
 		}
 	}
 
