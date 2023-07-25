@@ -8,6 +8,7 @@ import {
 	codeBlock,
 	type ButtonInteraction,
 	type InteractionResponse,
+	type ButtonBuilder,
 } from 'discord.js';
 
 import { envConfig } from '@config';
@@ -16,7 +17,7 @@ import type MiamiClient from '@structs/client';
 import Command from '@structs/command';
 import type Context from '@structs/context';
 
-import { buildButton } from '@utils/discord/builders/button.builder';
+import { buildActionRow, buildButton } from '@utils/discord/builders';
 
 export default class EvalCommand extends Command {
 	constructor(client: MiamiClient) {
@@ -80,9 +81,11 @@ export default class EvalCommand extends Command {
 					style: ButtonStyle.Danger,
 				});
 
+				const row = buildActionRow<ButtonBuilder>(button);
+
 				interactionResponse = (await ctx.reply({
 					content: result,
-					components: [button],
+					components: [row],
 				})) as InteractionResponse;
 			} else {
 				console.info('Result from eval: ', result);
