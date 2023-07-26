@@ -1,11 +1,13 @@
 type EnvConfigProps = {
-	discordToken: string;
-	mainGuildId: string;
-	ownerId: string;
+	discordClientToken: string;
+	discordMainGuildId: string;
+	discordOwnerId: string;
+	messariApiKey: string;
 };
 
 export const envConfig: EnvConfigProps = {
-	discordToken: process.env.DISCORD_TOKEN as string,
-	mainGuildId: process.env.MAIN_GUILD_ID as string,
-	ownerId: process.env.OWNER_ID as string,
+	discordClientToken: process.env.DISCORD_CLIENT_TOKEN as string,
+	discordMainGuildId: process.env.MAIN_GUILD_ID as string,
+	discordOwnerId: process.env.OWNER_ID as string,
+	messariApiKey: process.env.MESSARI_API_KEY as string,
 };

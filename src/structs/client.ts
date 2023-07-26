@@ -34,7 +34,7 @@ export default class MiamiClient extends Client {
 		}
 
 		await this.guilds.cache
-			.get(envConfig.mainGuildId)
+			.get(envConfig.discordMainGuildId)
 			?.commands.set(this.commands);
 	}
 

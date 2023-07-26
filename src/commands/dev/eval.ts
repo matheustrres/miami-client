@@ -42,7 +42,7 @@ export default class EvalCommand extends Command {
 				.slice(0, 3000)
 				.replace(/`/g, `\`${String.fromCharCode(8203)}`)
 				.replace(/@/g, `@${String.fromCharCode(8203)}`)
-				.replace(new RegExp(process.env.DISCORD_TOKEN, 'gi'), '****');
+				.replace(new RegExp(process.env.DISCORD_CLIENT_TOKEN, 'gi'), '****');
 		}
 
 		return text;
@@ -104,7 +104,7 @@ export default class EvalCommand extends Command {
 		const collector = ctx.channel!.createMessageComponentCollector({
 			componentType: ComponentType.Button,
 			time: 45_000,
-			filter: (i: Interaction) => i.user.id === envConfig.ownerId,
+			filter: (i: Interaction) => i.user.id === envConfig.discordOwnerId,
 		});
 
 		collector.on('collect', async (btn: ButtonInteraction): Promise<void> => {

@@ -5,4 +5,4 @@ import MiamiClient from './structs/client';
 
 const client = new MiamiClient();
 
-client.login(envConfig.discordToken);
+client.login(envConfig.discordClientToken);

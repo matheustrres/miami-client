@@ -25,7 +25,7 @@ export default class InteractionCreateEvent extends Event {
 			if (command) {
 				if (
 					command.category === 'Dev' &&
-					interaction.user.id !== envConfig.ownerId
+					interaction.user.id !== envConfig.discordOwnerId
 				) {
 					return interaction.reply({
 						ephemeral: true,
