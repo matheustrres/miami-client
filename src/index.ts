@@ -1,4 +1,5 @@
 import './utils/module-alias';
+import './utils/cache-manager';
 
 import { envConfig } from './config';
 import MiamiClient from './structs/client';
