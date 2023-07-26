@@ -1,4 +1,8 @@
 import {
+	type MessariAllAssets,
+	type QueryResult,
+} from '@matheustrres/messari-client';
+import {
 	type ActionRowBuilder,
 	ApplicationCommandOptionType,
 	type ButtonBuilder,
@@ -173,7 +177,8 @@ export default class CryptoCommand extends Command {
 					row.components[0].setDisabled(true);
 					row.components[1].setDisabled(false);
 
-					const allAssets = await messariClient.listAllAssets();
+					const allAssets: QueryResult<MessariAllAssets> =
+						await messariClient.listAllAssets();
 
 					const slicedAssets = allAssets.data!.slice(0, 9);
 					const sortedAssets = slicedAssets.sort(

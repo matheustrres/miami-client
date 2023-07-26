@@ -1,14 +1,14 @@
 import {
-	type MessariAssetMarketCapProps,
-	type MessariAssetMarketDataProps,
+	type MessariAssetMarketCap,
+	type MessariAssetMarketData,
 } from '@matheustrres/messari-client';
 
 type AssetModelProps = {
 	id: string;
 	name: string;
 	symbol: string;
-	marketCap: MessariAssetMarketCapProps;
-	marketData: MessariAssetMarketDataProps;
+	marketCap: MessariAssetMarketCap;
+	marketData: MessariAssetMarketData;
 };
 
 export class MessariAssetModel {
@@ -16,8 +16,8 @@ export class MessariAssetModel {
 	public readonly name: string;
 	public readonly symbol: string;
 
-	public readonly marketCap: MessariAssetMarketCapProps;
-	public readonly marketData: MessariAssetMarketDataProps;
+	public readonly marketCap: MessariAssetMarketCap;
+	public readonly marketData: MessariAssetMarketData;
 
 	public readonly rank: number;
 	public readonly marketCapDominancePercent: number;
