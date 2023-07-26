@@ -1,6 +1,6 @@
 import {
 	type MessariAllAssets,
-	type QueryResult,
+	type MessariAssetMetrics,
 } from '@matheustrres/messari-client';
 import {
 	type ActionRowBuilder,
@@ -18,6 +18,7 @@ import type MiamiClient from '@structs/client';
 import Command from '@structs/command';
 import type Context from '@structs/context';
 
+import { cacheManager } from '@utils/cache-manager';
 import {
 	buildActionRow,
 	buildButton,
@@ -60,39 +61,53 @@ export default class CryptoCommand extends Command {
 	};
 
 	public run = async (ctx: Context) => {
-		const coinName: string = ctx.interaction.options.getString('coin', true);
+		const assetName: string = ctx.interaction.options.getString('coin', true);
 
-		const { status, data } = await messariClient.getAssetMetrics(coinName);
+		let messariAssetMetrics: MessariAssetMetrics;
 
-		if (status.error_message != undefined) {
-			let err: string;
+		const cachedAssetMetrics = (await cacheManager.get(
+			`asset_metrics:${assetName}`,
+		)) as MessariAssetMetrics;
 
-			if (status.error_message === 'Asset not found') {
-				const allAssets = 'https://messari.io/screener/all-assets-D86E0735';
+		if (cachedAssetMetrics) {
+			messariAssetMetrics = cachedAssetMetrics;
+		} else {
+			const { status, data } = await messariClient.getAssetMetrics(assetName);
 
-				err = `Are you sure \`${coinName}\` is a valid asset? Check **[here](${allAssets})** the name of all available assets.`;
-			} else {
-				err =
-					'Sorry, an unidentified error was found! Please, try again later.';
+			if (status.error_message != undefined) {
+				let err: string;
+
+				if (status.error_message === 'Asset not found') {
+					const allAssets = 'https://messari.io/screener/all-assets-D86E0735';
+
+					err = `Are you sure \`${assetName}\` is a valid asset? Check **[here](${allAssets})** the name of all available assets.`;
+				} else {
+					console.error(
+						`An unidentified error has been found while trying to find an asset: `,
+						status,
+					);
+
+					err =
+						'Sorry, an unidentified error was found! Please, try again later.';
+				}
+
+				return ctx.reply({
+					ephemeral: true,
+					content: err,
+				});
 			}
 
-			console.error(
-				`An error has been found while trying to find an asset: `,
-				status,
-			);
+			messariAssetMetrics = data as MessariAssetMetrics;
 
-			return ctx.reply({
-				ephemeral: true,
-				content: err,
-			});
+			await cacheManager.set(`asset_metrics:${assetName}`, data);
 		}
 
 		const asset = new MessariAssetModel({
-			id: data!.id,
-			name: data!.name,
-			symbol: data!.symbol,
-			marketCap: data!.marketcap,
-			marketData: data!.market_data,
+			id: messariAssetMetrics.id,
+			name: messariAssetMetrics.name,
+			symbol: messariAssetMetrics.symbol,
+			marketCap: messariAssetMetrics.marketcap,
+			marketData: messariAssetMetrics.market_data,
 		});
 
 		const lastTradeTimestamp = formatTimestamp(asset.lastTradeAt);
@@ -138,7 +153,7 @@ export default class CryptoCommand extends Command {
 				id: '1133479604686954637',
 				animated: false,
 			},
-			label: 'Top Coins',
+			label: 'Top Assets',
 			style: ButtonStyle.Secondary,
 		});
 
@@ -169,7 +184,7 @@ export default class CryptoCommand extends Command {
 
 		collector.on('collect', async (btn): Promise<void> => {
 			if (!btn.deferred) {
-				await btn.deferUpdate().catch(() => {});
+				await btn.deferUpdate().catch((): void => {});
 			}
 
 			switch (btn.customId) {
@@ -177,10 +192,21 @@ export default class CryptoCommand extends Command {
 					row.components[0].setDisabled(true);
 					row.components[1].setDisabled(false);
 
-					const allAssets: QueryResult<MessariAllAssets> =
-						await messariClient.listAllAssets();
+					let allAssets: MessariAllAssets;
 
-					const slicedAssets = allAssets.data!.slice(0, 9);
+					const cachedAllAssets = (await cacheManager.get(
+						`assets_list`,
+					)) as MessariAllAssets;
+
+					if (cachedAllAssets) {
+						allAssets = cachedAllAssets!;
+					} else {
+						allAssets = (await messariClient.listAllAssets()).data!;
+
+						await cacheManager.set(`assets_list`, allAssets);
+					}
+
+					const slicedAssets = allAssets.slice(0, 9);
 					const sortedAssets = slicedAssets.sort(
 						(x, y) =>
 							y.metrics.market_data.price_usd - x.metrics.market_data.price_usd,
