@@ -81,15 +81,15 @@ export default class CryptoCommand extends Command {
 					const allAssets = 'https://messari.io/screener/all-assets-D86E0735';
 
 					err = `Are you sure \`${assetName}\` is a valid asset? Check **[here](${allAssets})** the name of all available assets.`;
-				} else {
-					console.error(
-						`An unidentified error has been found while trying to find an asset: `,
-						status,
-					);
-
-					err =
-						'Sorry, an unidentified error was found! Please, try again later.';
 				}
+
+				console.error(
+					`An unidentified error has been found while trying to find an asset: `,
+					status,
+				);
+
+				err =
+					'Sorry, an unidentified error was found! Please, try again later.';
 
 				return ctx.reply({
 					ephemeral: true,
@@ -97,7 +97,7 @@ export default class CryptoCommand extends Command {
 				});
 			}
 
-			messariAssetMetrics = data as MessariAssetMetrics;
+			messariAssetMetrics = data!;
 
 			await cacheManager.set(`asset_metrics:${assetName}`, data);
 		}
@@ -110,9 +110,6 @@ export default class CryptoCommand extends Command {
 			marketData: messariAssetMetrics.market_data,
 		});
 
-		const lastTradeTimestamp = formatTimestamp(asset.lastTradeAt);
-		const lastTradeAtTimestamp = formatTimestamp(asset.lastTradeAt, 'R');
-
 		const mainEmbedDescription: string[] = [
 			`» \`Data\`:`,
 			`ㅤ• Price: \`${toCurrency(
@@ -123,7 +120,9 @@ export default class CryptoCommand extends Command {
 			`ㅤ• Volume in the last 24h: **${shortenNumber(
 				asset.realVolumeLast24h,
 			)}**`,
-			`ㅤ• Last transaction: ${lastTradeTimestamp} (${lastTradeAtTimestamp})`,
+			`ㅤ• Last transaction: ${formatTimestamp(
+				asset.lastTradeAt,
+			)} (${formatTimestamp(asset.lastTradeAt, 'R')})`,
 			`» \`Market Capitalization\`:`,
 			`ㅤ• Rank: :medal: ${asset.rank}`,
 			` ㅤ• Dominance: **${asset.marketCapDominancePercent.toFixed(2)}%**`,
