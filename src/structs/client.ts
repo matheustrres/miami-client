@@ -6,8 +6,11 @@ import type Event from './event';
 import { envConfig } from '@config';
 
 import { loadResources } from '@utils/helpers/load-resources';
+import { Logger } from '@utils/logger';
 
 export default class MiamiClient extends Client {
+	private logger: Logger;
+
 	public commands: Command[] = [];
 	public events: Event[] = [];
 
@@ -19,6 +22,8 @@ export default class MiamiClient extends Client {
 			},
 			intents: 38671,
 		});
+
+		this.logger = Logger.setTo(this.constructor.name);
 
 		this.loadEvents();
 		this.loadCommands();
@@ -33,9 +38,28 @@ export default class MiamiClient extends Client {
 			throw new Error('No commands have been loaded yet.');
 		}
 
-		await this.guilds.cache
-			.get(envConfig.discordMainGuildId)
-			?.commands.set(this.commands);
+		this.logger.info(
+			'--------------------------------------------------------',
+		);
+		this.logger.info(
+			'Initializing registration of (/) application commands...',
+		);
+
+		try {
+			await this.guilds.cache
+				.get(envConfig.discordMainGuildId)
+				?.commands.set(this.commands);
+
+			this.logger.info('Application (/) commands successfully registered.');
+		} catch (error) {
+			this.logger.info(
+				`Error while registering application (/) commands: \n${error}`,
+			);
+		}
+
+		this.logger.info(
+			'--------------------------------------------------------',
+		);
 	}
 
 	private loadCommands(): void {
@@ -45,7 +69,7 @@ export default class MiamiClient extends Client {
 			resourcePath: 'commands',
 		});
 
-		console.log(`Total commands loaded: ${commands.length}`);
+		this.logger.info(`Total commands loaded: ${commands.length}`);
 	}
 
 	private loadEvents(): void {
@@ -63,6 +87,6 @@ export default class MiamiClient extends Client {
 			}
 		}
 
-		console.log(`Total events loaded: ${events.length}`);
+		this.logger.info(`Total events loaded: ${events.length}`);
 	}
 }
