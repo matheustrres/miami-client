@@ -42,7 +42,7 @@ export default class MiamiClient extends Client {
 			'--------------------------------------------------------',
 		);
 		this.logger.info(
-			'Initializing registration of (/) application commands...',
+			'Initializing registration of Appplication (/) Commands...',
 		);
 
 		try {
@@ -50,10 +50,10 @@ export default class MiamiClient extends Client {
 				.get(envConfig.discordMainGuildId)
 				?.commands.set(this.commands);
 
-			this.logger.info('Application (/) commands successfully registered.');
+			this.logger.info('Application (/) Commands successfully registered.');
 		} catch (error) {
-			this.logger.info(
-				`Error while registering application (/) commands: \n${error}`,
+			this.logger.error(
+				`Error while registering Application (/) commands: \n${error}`,
 			);
 		}
 
