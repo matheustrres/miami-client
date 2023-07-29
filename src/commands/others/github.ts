@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 
-import { githubRepositoryHandler } from './github/github-repositories.handler';
+import { githubRepositoryHandler } from './github/github-repository.handler';
 import { githubUserHandler } from './github/github-user.handler';
 
 import type MiamiClient from '@structs/client';
