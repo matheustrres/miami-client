@@ -1,5 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 
+import { githubRepositoryHandler } from './github/github-repositories.handler';
 import { githubUserHandler } from './github/github-user.handler';
 
 import type MiamiClient from '@structs/client';
@@ -26,6 +27,25 @@ export default class GithubCommand extends Command {
 						},
 					],
 				},
+				{
+					name: 'repositories',
+					description: 'Get repository data on GitHub',
+					type: ApplicationCommandOptionType.Subcommand,
+					options: [
+						{
+							name: 'owner',
+							description: 'Owner username of the repository',
+							type: ApplicationCommandOptionType.String,
+							required: true,
+						},
+						{
+							name: 'name',
+							description: 'Name of the repository',
+							type: ApplicationCommandOptionType.String,
+							required: true,
+						},
+					],
+				},
 			],
 			permissions: {
 				clientPerms: ['EmbedLinks'],
@@ -40,6 +60,14 @@ export default class GithubCommand extends Command {
 			return githubUserHandler(
 				ctx,
 				ctx.interaction.options.getString('username', true),
+			);
+		}
+
+		if (subCommand === 'repositories') {
+			return githubRepositoryHandler(
+				ctx,
+				ctx.interaction.options.getString('owner', true),
+				ctx.interaction.options.getString('name', true),
 			);
 		}
 	};
