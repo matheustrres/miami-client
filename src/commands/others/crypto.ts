@@ -1,5 +1,5 @@
 import {
-	type MessariAllAssets,
+	type MessariAssetWithMetrics,
 	type MessariAssetMetrics,
 } from '@matheustrres/messari-client';
 import {
@@ -78,9 +78,9 @@ export default class CryptoCommand extends Command {
 				let err: string;
 
 				if (status.error_message === 'Asset not found') {
-					const allAssets = 'https://messari.io/screener/all-assets-D86E0735';
+					const assetsList = 'https://messari.io/screener/all-assets-D86E0735';
 
-					err = `Are you sure \`${assetName}\` is a valid asset? Check **[here](${allAssets})** the name of all available assets.`;
+					err = `Are you sure \`${assetName}\` is a valid asset? Check **[here](${assetsList})** the name of all available assets.`;
 				}
 
 				console.error(
@@ -191,37 +191,40 @@ export default class CryptoCommand extends Command {
 					row.components[0].setDisabled(true);
 					row.components[1].setDisabled(false);
 
-					let allAssets: MessariAllAssets;
+					let allAssetsWithMetrics: MessariAssetWithMetrics[];
 
 					const cachedAllAssets = (await cacheManager.get(
 						`assets_list`,
-					)) as MessariAllAssets;
+					)) as MessariAssetWithMetrics[];
 
 					if (cachedAllAssets) {
-						allAssets = cachedAllAssets!;
+						allAssetsWithMetrics = cachedAllAssets!;
 					} else {
-						allAssets = (await messariClient.listAllAssets()).data!;
+						allAssetsWithMetrics = (await messariClient.listAllAssets()).data!;
 
-						await cacheManager.set(`assets_list`, allAssets);
+						await cacheManager.set(`assets_list`, allAssetsWithMetrics);
 					}
 
-					const slicedAssets = allAssets.slice(0, 9);
-					const sortedAssets = slicedAssets.sort(
+					const slicedAssetsWithMetrics: MessariAssetWithMetrics[] =
+						allAssetsWithMetrics.slice(0, 9);
+					const sortedAssetsWithMetrics = slicedAssetsWithMetrics.sort(
 						(x, y) =>
 							y.metrics.market_data.price_usd - x.metrics.market_data.price_usd,
 					);
 
-					const description = sortedAssets.map((asset, i): string => {
-						const { name, metrics } = asset;
+					const description = sortedAssetsWithMetrics.map(
+						(asset, i): string => {
+							const { name, metrics } = asset;
 
-						return `
+							return `
                 \`${i + 1}\` - **${name}** \`${toCurrency(
 									metrics.market_data.price_usd,
 								)}\` (${this.formatPercentage(
 									metrics.market_data.percent_change_btc_last_24_hours || 0,
 								)}% in 24h)
               `;
-					});
+						},
+					);
 
 					const embed = buildEmbed({
 						title: 'Position | Asset | Price in USD',
