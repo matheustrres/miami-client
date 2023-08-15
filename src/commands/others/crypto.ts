@@ -11,8 +11,8 @@ import {
 	type Interaction,
 } from 'discord.js';
 
-import { MessariAssetModel } from './crypto/asset.model';
 import { messariClient } from './crypto/client';
+import { MessariAssetModel } from './crypto/models';
 
 import type MiamiClient from '@structs/client';
 import Command from '@structs/command';
@@ -111,44 +111,46 @@ export default class CryptoCommand extends Command {
 			await cacheManager.set(`asset/${assetName}/metrics`, data);
 		}
 
-		const asset = new MessariAssetModel({
+		const { id, marketCap, marketData, name, symbol } = new MessariAssetModel({
 			id: messariAssetMetrics.id,
 			name: messariAssetMetrics.name,
 			symbol: messariAssetMetrics.symbol,
-			marketCap: messariAssetMetrics.marketcap,
-			marketData: messariAssetMetrics.market_data,
+			marketCap: messariAssetMetrics.marketcap!,
+			marketData: messariAssetMetrics.market_data!,
 		});
 
 		const mainEmbedDescription: string[] = [
 			`» \`Data\`:`,
 			`ㅤ• Price: \`${toCurrency(
-				asset.priceUSD,
-			)}\` (Changed \`${asset.percentChangeLast1hUSD.toFixed(
+				marketData.priceUSD,
+			)}\` (Changed \`${marketData.percentChangeLast1hUSD.toFixed(
 				2,
-			)}%\` in 1h, \`${asset.percentChangeLast24hUSD.toFixed(2)}%\` in 24h)`,
+			)}%\` in 1h, \`${marketData.percentChangeLast24hUSD.toFixed(
+				2,
+			)}%\` in 24h)`,
 			`ㅤ• Volume in the last 24h: **${shortenNumber(
-				asset.realVolumeLast24h,
+				marketData.realVolumeLast24h,
 			)}**`,
 			`ㅤ• Last transaction: ${formatTimestamp(
-				asset.lastTradeAt,
-			)} (${formatTimestamp(asset.lastTradeAt, 'R')})`,
+				marketData.lastTradeAt,
+			)} (${formatTimestamp(marketData.lastTradeAt, 'R')})`,
 			`» \`Market Capitalization\`:`,
-			`ㅤ• Rank: :medal: ${asset.rank}`,
-			` ㅤ• Dominance: **${asset.marketCapDominancePercent.toFixed(2)}%**`,
+			`ㅤ• Rank: :medal: ${marketCap.rank}`,
+			` ㅤ• Dominance: **${marketCap.dominancePercent.toFixed(2)}%**`,
 			`ㅤ• Current capital USD: \`${shortenNumber(
-				asset.currentMarketCapUSD,
-			)}\` (${toCurrency(asset.currentMarketCapUSD)})`,
+				marketCap.currentMarketCapUSD,
+			)}\` (${toCurrency(marketCap.currentMarketCapUSD)})`,
 			`ㅤ• Highlight capital USD: \`${shortenNumber(
-				asset.outstandingMarketCapUSD,
-			)}\` (${toCurrency(asset.outstandingMarketCapUSD)})`,
+				marketCap.outstandingMarketCapUSD,
+			)}\` (${toCurrency(marketCap.outstandingMarketCapUSD)})`,
 			`ㅤ• Paid-in capital USD: \`${shortenNumber(
-				asset.realizedMarketCapUSD,
-			)}\` (${toCurrency(asset.realizedMarketCapUSD)})`,
+				marketCap.realizedMarketCapUSD,
+			)}\` (${toCurrency(marketCap.realizedMarketCapUSD)})`,
 		];
 
 		const mainEmbed = buildEmbed({
 			author: {
-				name: `[${asset.symbol}] ${asset.name} (${asset.id})`,
+				name: `[${symbol}] ${name} (${id})`,
 				iconURL: this.client.user?.displayAvatarURL(),
 			},
 			description: mainEmbedDescription.join('\n'),
@@ -172,7 +174,7 @@ export default class CryptoCommand extends Command {
 				id: '1011087460371017818',
 				animated: false,
 			},
-			label: asset.name,
+			label: name,
 			style: ButtonStyle.Secondary,
 			disabled: true,
 		});
