@@ -1,6 +1,6 @@
 import {
-	type MessariAssetWithMetrics,
-	type MessariAssetMetrics,
+	type PickMetricsForAllAssets,
+	type PickMetricsForAsset,
 } from '@matheustrres/messari-client';
 import {
 	type ActionRowBuilder,
@@ -29,6 +29,9 @@ import {
 	formatTimestamp,
 	shortenNumber,
 } from '@utils/helpers/formatters';
+
+type AssetMetrics = PickMetricsForAsset<['marketcap', 'market_data']>;
+type AllAssetsMetrics = PickMetricsForAllAssets<['market_data']>;
 
 export default class CryptoCommand extends Command {
 	constructor(client: MiamiClient) {
@@ -63,33 +66,39 @@ export default class CryptoCommand extends Command {
 	public run = async (ctx: Context) => {
 		const assetName: string = ctx.interaction.options.getString('coin', true);
 
-		let messariAssetMetrics: MessariAssetMetrics;
+		let messariAssetMetrics: AssetMetrics;
 
 		const cachedAssetMetrics = (await cacheManager.get(
-			`asset_metrics:${assetName}`,
-		)) as MessariAssetMetrics;
+			`asset/${assetName}/metrics`,
+		)) as AssetMetrics;
 
 		if (cachedAssetMetrics) {
 			messariAssetMetrics = cachedAssetMetrics;
 		} else {
-			const { status, data } = await messariClient.getAssetMetrics(assetName);
+			const { status, data } = await messariClient.getAsset<AssetMetrics>(
+				assetName,
+				{
+					metrics: ['marketcap', 'market_data'],
+				},
+			);
 
-			if (status.error_message != undefined) {
+			if (status.error_message) {
 				let err: string;
 
-				if (status.error_message === 'Asset not found') {
-					const assetsList = 'https://messari.io/screener/all-assets-D86E0735';
+				switch (status.error_message) {
+					case 'Not Found':
+						err = `Invalid asset name! All available assets available **[here](https://messari.io/screener/all-assets-D86E0735)**.`;
+						break;
 
-					err = `Are you sure \`${assetName}\` is a valid asset? Check **[here](${assetsList})** the name of all available assets.`;
+					default:
+						console.error(
+							`An unidentified error has been found while trying to find an asset: `,
+							status,
+						);
+						err =
+							'Sorry, an unidentified error was found! Please, try again later.';
+						break;
 				}
-
-				console.error(
-					`An unidentified error has been found while trying to find an asset: `,
-					status,
-				);
-
-				err =
-					'Sorry, an unidentified error was found! Please, try again later.';
 
 				return ctx.reply({
 					ephemeral: true,
@@ -97,9 +106,9 @@ export default class CryptoCommand extends Command {
 				});
 			}
 
-			messariAssetMetrics = data!;
+			messariAssetMetrics = data as AssetMetrics;
 
-			await cacheManager.set(`asset_metrics:${assetName}`, data);
+			await cacheManager.set(`asset/${assetName}/metrics`, data);
 		}
 
 		const asset = new MessariAssetModel({
@@ -191,25 +200,29 @@ export default class CryptoCommand extends Command {
 					row.components[0].setDisabled(true);
 					row.components[1].setDisabled(false);
 
-					let allAssetsWithMetrics: MessariAssetWithMetrics[];
+					let allAssetsWithMetrics: AllAssetsMetrics[];
 
 					const cachedAllAssets = (await cacheManager.get(
 						`assets_list`,
-					)) as MessariAssetWithMetrics[];
+					)) as AllAssetsMetrics[];
 
 					if (cachedAllAssets) {
 						allAssetsWithMetrics = cachedAllAssets!;
 					} else {
-						allAssetsWithMetrics = (await messariClient.listAllAssets()).data!;
+						allAssetsWithMetrics = (
+							await messariClient.listAllAssets<AllAssetsMetrics[]>({
+								metrics: ['market_data'],
+							})
+						).data!;
 
 						await cacheManager.set(`assets_list`, allAssetsWithMetrics);
 					}
 
-					const slicedAssetsWithMetrics: MessariAssetWithMetrics[] =
-						allAssetsWithMetrics.slice(0, 9);
+					const slicedAssetsWithMetrics = allAssetsWithMetrics.slice(0, 9);
 					const sortedAssetsWithMetrics = slicedAssetsWithMetrics.sort(
 						(x, y) =>
-							y.metrics.market_data.price_usd - x.metrics.market_data.price_usd,
+							y.metrics.market_data!.price_usd -
+							x.metrics.market_data!.price_usd,
 					);
 
 					const description = sortedAssetsWithMetrics.map(
@@ -218,9 +231,9 @@ export default class CryptoCommand extends Command {
 
 							return `
                 \`${i + 1}\` - **${name}** \`${toCurrency(
-									metrics.market_data.price_usd,
+									metrics.market_data!.price_usd,
 								)}\` (${this.formatPercentage(
-									metrics.market_data.percent_change_btc_last_24_hours || 0,
+									metrics.market_data!.percent_change_btc_last_24_hours || 0,
 								)}% in 24h)
               `;
 						},
