@@ -21,7 +21,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@matheustrres/messari-client": "^1.0.5",
+    "@matheustrres/messari-client": "^1.0.7",
     "cache-manager": "^5.2.3",
     "discord.js": "^14.11.0",
     "module-alias": "^2.2.3"
