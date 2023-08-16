@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType } from 'discord.js';
 
-import { githubRepositoryHandler } from './github/github-repository.handler';
-import { githubUserHandler } from './github/github-user.handler';
+import { GithubRepositoriesHandlerSubCommand } from '@commands/@sub-commands/github/repositories-handler';
+import { GithubUsersHandlerSubCommand } from '@commands/@sub-commands/github/users-handler';
 
 import type MiamiClient from '@structs/client';
 import Command from '@structs/command';
@@ -54,21 +54,26 @@ export default class GithubCommand extends Command {
 	}
 
 	public run = async (ctx: Context) => {
-		const subCommand = ctx.interaction.options.getSubcommand(true);
+		const subCommand: string = ctx.interaction.options.getSubcommand(true);
 
-		if (subCommand === 'users') {
-			return githubUserHandler(
-				ctx,
-				ctx.interaction.options.getString('username', true),
-			);
-		}
+		switch (subCommand) {
+			case 'users':
+				new GithubUsersHandlerSubCommand(ctx).exec(
+					ctx.interaction.options.getString('username', true),
+				);
 
-		if (subCommand === 'repositories') {
-			return githubRepositoryHandler(
-				ctx,
-				ctx.interaction.options.getString('owner', true),
-				ctx.interaction.options.getString('name', true),
-			);
+				break;
+
+			case 'repositories':
+				new GithubRepositoriesHandlerSubCommand(ctx).exec(
+					ctx.interaction.options.getString('owner', true),
+					ctx.interaction.options.getString('name', true),
+				);
+
+				break;
+
+			default:
+				break;
 		}
 	};
 }
