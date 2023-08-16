@@ -3,7 +3,7 @@ import { type PickMetricsForAllAssets } from '@matheustrres/messari-client';
 import { messariClient } from '@commands/others/crypto/client';
 
 import type Context from '@structs/context';
-import SubCommand from '@structs/sub-command';
+import type SubCommand from '@structs/sub-command';
 
 import { cacheManager } from '@utils/cache-manager';
 import { buildEmbed } from '@utils/discord/builders';
@@ -18,10 +18,8 @@ const formatPercentage = (percentage: number): string => {
 	return `${emoji} \`${fixed}\``;
 };
 
-export class CryptoListTopAssetsSubCommand extends SubCommand {
-	constructor(private readonly ctx: Context) {
-		super();
-	}
+export class CryptoListTopAssetsSubCommand implements SubCommand {
+	constructor(private readonly ctx: Context) {}
 
 	public exec = async () => {
 		let allAssets: AllAssetsWithMetrics[];

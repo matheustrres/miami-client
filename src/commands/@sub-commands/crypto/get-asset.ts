@@ -4,7 +4,7 @@ import { messariClient } from '@commands/others/crypto/client';
 import { MessariAssetModel } from '@commands/others/crypto/models';
 
 import type Context from '@structs/context';
-import SubCommand from '@structs/sub-command';
+import type SubCommand from '@structs/sub-command';
 
 import { cacheManager } from '@utils/cache-manager';
 import { buildEmbed } from '@utils/discord/builders';
@@ -16,10 +16,8 @@ import {
 
 type AssetWithMetrics = PickMetricsForAsset<['marketcap', 'market_data']>;
 
-export class CryptoGetAssetSubCommand extends SubCommand {
-	constructor(private readonly ctx: Context) {
-		super();
-	}
+export class CryptoGetAssetSubCommand implements SubCommand {
+	constructor(private readonly ctx: Context) {}
 
 	public exec = async (assetName: string) => {
 		let asset: AssetWithMetrics;
