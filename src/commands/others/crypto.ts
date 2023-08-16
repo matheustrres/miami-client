@@ -1,273 +1,59 @@
-import {
-	type PickMetricsForAllAssets,
-	type PickMetricsForAsset,
-} from '@matheustrres/messari-client';
-import {
-	type ActionRowBuilder,
-	ApplicationCommandOptionType,
-	type ButtonBuilder,
-	ButtonStyle,
-	ComponentType,
-	type Interaction,
-} from 'discord.js';
+import { ApplicationCommandOptionType } from 'discord.js';
 
-import { messariClient } from './crypto/client';
-import { MessariAssetModel } from './crypto/models';
+import { CryptoGetAssetSubCommand } from '@commands/@sub-commands/crypto/get-asset';
+import { CryptoListTopAssetsSubCommand } from '@commands/@sub-commands/crypto/list-top-assets';
 
 import type MiamiClient from '@structs/client';
 import Command from '@structs/command';
 import type Context from '@structs/context';
 
-import { cacheManager } from '@utils/cache-manager';
-import {
-	buildActionRow,
-	buildButton,
-	buildEmbed,
-} from '@utils/discord/builders';
-import {
-	toCurrency,
-	formatTimestamp,
-	shortenNumber,
-} from '@utils/helpers/formatters';
-
-type AssetMetrics = PickMetricsForAsset<['marketcap', 'market_data']>;
-type AllAssetsMetrics = PickMetricsForAllAssets<['market_data']>;
-
 export default class CryptoCommand extends Command {
 	constructor(client: MiamiClient) {
 		super(client, {
 			name: 'crypto',
-			description: 'Get metrics of a crypto coin',
+			description: 'just a test',
 			category: 'Others',
 			options: [
 				{
-					name: 'coin',
-					description: 'The name of the coin',
-					type: ApplicationCommandOptionType.String,
-					required: true,
+					name: 'get',
+					description: 'Get metadata and metrics for a coin',
+					type: ApplicationCommandOptionType.Subcommand,
+					options: [
+						{
+							name: 'coin',
+							description: 'The coin name',
+							type: ApplicationCommandOptionType.String,
+							required: true,
+						},
+					],
+				},
+				{
+					name: 'list',
+					description: 'List top assets',
+					type: ApplicationCommandOptionType.Subcommand,
 				},
 			],
 		});
 	}
 
-	private formatPercentage = (percentage: number): string => {
-		const fixed: string = percentage.toFixed(2);
-
-		let result: string;
-
-		if (percentage < 0) result = `<:decline:1133507353518559403> \`${fixed}\``;
-		else if (percentage > 0)
-			result = `<:growth:1133507428256862349> \`${fixed}\``;
-		else result = `\`${fixed}\``;
-
-		return result;
-	};
-
 	public run = async (ctx: Context) => {
-		const assetName: string = ctx.interaction.options.getString('coin', true);
+		const subCommand: string = ctx.interaction.options.getSubcommand();
 
-		let messariAssetMetrics: AssetMetrics;
+		switch (subCommand) {
+			case 'get':
+				new CryptoGetAssetSubCommand(ctx).exec(
+					ctx.interaction.options.getString('coin', true),
+				);
 
-		const cachedAssetMetrics = (await cacheManager.get(
-			`asset/${assetName}/metrics`,
-		)) as AssetMetrics;
+				break;
 
-		if (cachedAssetMetrics) {
-			messariAssetMetrics = cachedAssetMetrics;
-		} else {
-			const { status, data } = await messariClient.getAsset<AssetMetrics>(
-				assetName,
-				{
-					metrics: ['marketcap', 'market_data'],
-				},
-			);
+			case 'list':
+				new CryptoListTopAssetsSubCommand(ctx).exec();
 
-			if (status.error_message) {
-				let err: string;
+				break;
 
-				switch (status.error_message) {
-					case 'Not Found':
-						err = `Invalid asset name! All available assets available **[here](https://messari.io/screener/all-assets-D86E0735)**.`;
-						break;
-
-					default:
-						console.error(
-							`An unidentified error has been found while trying to find an asset: `,
-							status,
-						);
-						err =
-							'Sorry, an unidentified error was found! Please, try again later.';
-						break;
-				}
-
-				return ctx.reply({
-					ephemeral: true,
-					content: err,
-				});
-			}
-
-			messariAssetMetrics = data as AssetMetrics;
-
-			await cacheManager.set(`asset/${assetName}/metrics`, data);
+			default:
+				break;
 		}
-
-		const { id, marketCap, marketData, name, symbol } = new MessariAssetModel({
-			id: messariAssetMetrics.id,
-			name: messariAssetMetrics.name,
-			symbol: messariAssetMetrics.symbol,
-			marketCap: messariAssetMetrics.marketcap!,
-			marketData: messariAssetMetrics.market_data!,
-		});
-
-		const mainEmbedDescription: string[] = [
-			`» \`Data\`:`,
-			`ㅤ• Price: \`${toCurrency(
-				marketData.priceUSD,
-			)}\` (Changed \`${marketData.percentChangeLast1hUSD.toFixed(
-				2,
-			)}%\` in 1h, \`${marketData.percentChangeLast24hUSD.toFixed(
-				2,
-			)}%\` in 24h)`,
-			`ㅤ• Volume in the last 24h: **${shortenNumber(
-				marketData.realVolumeLast24h,
-			)}**`,
-			`ㅤ• Last transaction: ${formatTimestamp(
-				marketData.lastTradeAt,
-			)} (${formatTimestamp(marketData.lastTradeAt, 'R')})`,
-			`» \`Market Capitalization\`:`,
-			`ㅤ• Rank: :medal: ${marketCap.rank}`,
-			` ㅤ• Dominance: **${marketCap.dominancePercent.toFixed(2)}%**`,
-			`ㅤ• Current capital USD: \`${shortenNumber(
-				marketCap.currentMarketCapUSD,
-			)}\` (${toCurrency(marketCap.currentMarketCapUSD)})`,
-			`ㅤ• Highlight capital USD: \`${shortenNumber(
-				marketCap.outstandingMarketCapUSD,
-			)}\` (${toCurrency(marketCap.outstandingMarketCapUSD)})`,
-			`ㅤ• Paid-in capital USD: \`${shortenNumber(
-				marketCap.realizedMarketCapUSD,
-			)}\` (${toCurrency(marketCap.realizedMarketCapUSD)})`,
-		];
-
-		const mainEmbed = buildEmbed({
-			author: {
-				name: `[${symbol}] ${name} (${id})`,
-				iconURL: this.client.user?.displayAvatarURL(),
-			},
-			description: mainEmbedDescription.join('\n'),
-		});
-
-		const nextPageButton: ButtonBuilder = buildButton({
-			custom_id: 'next_page',
-			emoji: {
-				name: 'next',
-				id: '1133479604686954637',
-				animated: false,
-			},
-			label: 'Top Assets',
-			style: ButtonStyle.Secondary,
-		});
-
-		const previousPageButton: ButtonBuilder = buildButton({
-			custom_id: 'previous_page',
-			emoji: {
-				name: 'previous',
-				id: '1011087460371017818',
-				animated: false,
-			},
-			label: name,
-			style: ButtonStyle.Secondary,
-			disabled: true,
-		});
-
-		const row: ActionRowBuilder<ButtonBuilder> = buildActionRow<ButtonBuilder>(
-			nextPageButton,
-			previousPageButton,
-		);
-
-		await ctx.reply({ embeds: [mainEmbed], components: [row] });
-
-		const collector = ctx.channel!.createMessageComponentCollector({
-			componentType: ComponentType.Button,
-			time: 240_000, // 4 minutes
-			filter: (i: Interaction) => i.user.id === ctx.user.id,
-		});
-
-		collector.on('collect', async (btn): Promise<void> => {
-			if (!btn.deferred) {
-				await btn.deferUpdate().catch((): void => {});
-			}
-
-			switch (btn.customId) {
-				case 'next_page':
-					row.components[0].setDisabled(true);
-					row.components[1].setDisabled(false);
-
-					let allAssetsWithMetrics: AllAssetsMetrics[];
-
-					const cachedAllAssets = (await cacheManager.get(
-						`assets_list`,
-					)) as AllAssetsMetrics[];
-
-					if (cachedAllAssets) {
-						allAssetsWithMetrics = cachedAllAssets!;
-					} else {
-						allAssetsWithMetrics = (
-							await messariClient.listAllAssets<AllAssetsMetrics[]>({
-								metrics: ['market_data'],
-							})
-						).data!;
-
-						await cacheManager.set(`assets_list`, allAssetsWithMetrics);
-					}
-
-					const slicedAssetsWithMetrics = allAssetsWithMetrics.slice(0, 9);
-					const sortedAssetsWithMetrics = slicedAssetsWithMetrics.sort(
-						(x, y) =>
-							y.metrics.market_data!.price_usd -
-							x.metrics.market_data!.price_usd,
-					);
-
-					const description = sortedAssetsWithMetrics.map(
-						(asset, i): string => {
-							const { name, metrics } = asset;
-
-							return `
-                \`${i + 1}\` - **${name}** \`${toCurrency(
-									metrics.market_data!.price_usd,
-								)}\` (${this.formatPercentage(
-									metrics.market_data!.percent_change_btc_last_24_hours || 0,
-								)}% in 24h)
-              `;
-						},
-					);
-
-					const embed = buildEmbed({
-						title: 'Position | Asset | Price in USD',
-						author: {
-							name: 'Top assets in the moment',
-						},
-						description: description.join(''),
-					});
-
-					await btn.editReply({ embeds: [embed], components: [row] });
-
-					break;
-
-				case 'previous_page':
-					row.components[0].setDisabled(false);
-					row.components[1].setDisabled(true);
-
-					await btn.editReply({ embeds: [mainEmbed], components: [row] });
-
-					break;
-
-				default:
-					break;
-			}
-
-			collector.on('end', async (): Promise<void> => {
-				await ctx.interaction.deleteReply();
-			});
-		});
 	};
 }
